@@ -47,3 +47,34 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(3000);
+
+//Print Part - 1
+
+if (url === "/message" && method === "POST") {
+  const body = []; // to collect data chunks from the POST request
+
+  // When data arrives in chunks, push to `body`
+  req.on("data", (chunk) => {
+    body.push(chunk);
+  });
+
+  // When all data received:
+  req.on("end", () => {
+    // Combine all chunks into one buffer and convert to string
+    const parsedBody = Buffer.concat(body).toString();
+
+    // The data is like "message=UserName", so split by '=' to get value
+    const message = parsedBody.split("=")[1];
+
+    // Save the username to a file called "Data.txt"
+    fs.writeFileSync("Data.txt", message);
+
+    // Redirect the user back to home page:
+    res.statusCode = 302; // status 302 = redirect
+    res.setHeader("Location", "/");
+    return res.end(); // finish the response here
+  });
+
+  // Important: Don't call res.end() here — wait for 'end' event above
+  return;
+}
